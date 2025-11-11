@@ -28,7 +28,7 @@ def Function(following,driver):
         for x in range(randint(2,4)):
             
             path="/html/body/div[1]/section/main/section/div[3]/div[2]/div[2]/div/div/div/div["+str(x+1)+"]/div[3]/button"
-            driver.find_element_by_xpath(path).click()
+            driver.find_element(By.XPATH, path).click()
 
             #it appends the new people that you're following to the following list
             follow=driver.find_elements_by_xpath("/html/body/div[1]/section/main/section/div[3]/div[2]/div[2]/div/div/div/div["+str(x+1)+"]/div[2]/div[1]/div/span/a")[0]
@@ -52,7 +52,7 @@ def Function(following,driver):
         while True:
             #we try to follow person by person and when we see that we already follow that person, we finish
             try:
-                driver.find_element_by_xpath("/html/body/div[1]/section/main/div/div/div/div/div["+str(x+1)+"]/div[3]/button").click()               
+                driver.find_element(By.XPATH, "/html/body/div[1]/section/main/div/div/div/div/div["+str(x+1)+"]/div[3]/button").click()               
                 x=x+1
                 sleep(2)
 
@@ -112,7 +112,7 @@ def Function(following,driver):
                     x=x+1
 
                     sleep(1)
-                    fecha = driver.find_element_by_xpath("/html/body/div[4]/div[2]/div/article/div[3]/div[2]/a/time")                        
+                    fecha = driver.find_element(By.XPATH, "/html/body/div[4]/div[2]/div/article/div[3]/div[2]/a/time")                        
                     date = fecha.text
                     sleep(1)
 
@@ -121,7 +121,7 @@ def Function(following,driver):
                 
                         if randint(0,1)==1:
                             #we like half pictuers
-                            driver.find_element_by_xpath("/html/body/div[4]/div[2]/div/article/div[3]/section[1]/span[1]/button").click()
+                            driver.find_element(By.XPATH, "/html/body/div[4]/div[2]/div/article/div[3]/section[1]/span[1]/button").click()
                             print("Like")
                     
                             sleep(1)
@@ -130,10 +130,10 @@ def Function(following,driver):
 
                         #we pass to the next post
                         if x==1:
-                            driver.find_element_by_xpath("/html/body/div[4]/div[1]/div/div/a").click()
+                            driver.find_element(By.XPATH, "/html/body/div[4]/div[1]/div/div/a").click()
 
                         else:
-                            driver.find_element_by_xpath("/html/body/div[4]/div[1]/div/div/a[2]").click()
+                            driver.find_element(By.XPATH, "/html/body/div[4]/div[1]/div/div/a[2]").click()
 
                         sleep(2)
                 
@@ -164,7 +164,7 @@ def Function(following,driver):
             sleep(2)
 
             #we enter to the first story
-            driver.find_element_by_xpath("/html/body/div[1]/section/main/section/div/div[1]/div/div/div/div/ul/li[3]/div/button").click()
+            driver.find_element(By.XPATH, "/html/body/div[1]/section/main/section/div/div[1]/div/div/div/div/ul/li[3]/div/button").click()
             sleep(2)
 
             while True:
@@ -174,14 +174,14 @@ def Function(following,driver):
 
                     if x==0:
                         try:
-                            driver.find_element_by_xpath("/html/body/div[1]/section/div[1]/div/div[5]/section/div/button").click()
+                            driver.find_element(By.XPATH, "/html/body/div[1]/section/div[1]/div/div[5]/section/div/button").click()
                     
                         except:
-                            driver.find_element_by_xpath("/html/body/div[1]/section/div[1]/div/div[5]/section/div/button[2]").click()
+                            driver.find_element(By.XPATH, "/html/body/div[1]/section/div[1]/div/div[5]/section/div/button[2]").click()
                         
 
                     else:
-                        driver.find_element_by_xpath("/html/body/div[1]/section/div[1]/div/div[5]/section/div/button[2]").click()
+                        driver.find_element(By.XPATH, "/html/body/div[1]/section/div[1]/div/div[5]/section/div/button[2]").click()
                         
 
                 except:

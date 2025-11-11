@@ -1,0 +1,49 @@
+# Sensitive Files - DO NOT COMMIT
+accounts.csv
+email_config.py
+bot_properties.csv
+
+# Log Files
+*.log
+instagram_bot_*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+
+# Browser Drivers
+chromedriver.exe
+chromedriver
+geckodriver.exe
+geckodriver
+chromedriver-win64/
+chromedriver-win64.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Screenshots and Debug Files
+Screenshot*.png
+debug_page.html
+instagram_signup_page.png
+
+# Email/Profile Images
+Pictures/
+Instagram profile image/
+*.jpg
+*.jpeg
+*.png

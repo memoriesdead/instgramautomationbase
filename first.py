@@ -22,12 +22,12 @@ def main(driver,following):
         for x in range (10):
             sleep(1)
             path="/html/body/div[1]/section/main/section/div/div/div/div/div/div["+str(x+1)+"]/div[3]/button"
-            driver.find_element_by_xpath(path).click()
+            driver.find_element(By.XPATH, path).click()
 
 
             #we append to the following list (list of the people that we are following) 
             #the people that we have just started following
-            name=driver.find_element_by_xpath("/html/body/div[1]/section/main/section/div/div/div/div/div/div["+str(x+1)+"]/div[2]/div[1]/div/span/a")                
+            name=driver.find_element(By.XPATH, "/html/body/div[1]/section/main/section/div/div/div/div/div/div["+str(x+1)+"]/div[2]/div[1]/div/span/a")                
             following.append(name.get_attribute("text"))
             sleep(0.5)
     
@@ -49,8 +49,8 @@ def main(driver,following):
             #it will take as picture the one of the folder that has been created in pictures called instagram profile picture
             driver.get("https://www.instagram.com/pepe97.gi/")
             sleep(2)
-            driver.find_element_by_xpath("/html/body/div[1]/section/main/div/header/div/div/div/button").click()
-            #driver.find_element_by_xpath("/html/body/div[1]/section/main/section/div/div[2]/div[1]/div[2]/div/div/div/div/ul/li[5]/div/div/div/div/button").click()
+            driver.find_element(By.XPATH, "/html/body/div[1]/section/main/div/header/div/div/div/button").click()
+            #driver.find_element(By.XPATH, "/html/body/div[1]/section/main/section/div/div[2]/div[1]/div[2]/div/div/div/div/ul/li[5]/div/div/div/div/button").click()
             sleep(3)
             os.system('".\\Profile.exe"')
             sleep(7)
