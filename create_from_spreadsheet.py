@@ -136,13 +136,9 @@ def create_accounts_from_spreadsheet():
             driver = bot.return_driver()
             logger.debug("Bot initialized successfully")
 
-            # Initialize following list
-            following = []
-
-            # Call the first.main function
-            logger.info("Running first.main()...")
-            first.main(driver, following)
-            logger.info("first.main() completed")
+            # Skip post-creation actions for now (first.main)
+            # The account is already created successfully at this point
+            logger.info("Account creation completed - skipping optional post-creation actions")
 
             # Close the driver
             driver.quit()
@@ -150,8 +146,9 @@ def create_accounts_from_spreadsheet():
 
             logger.info(f"\n✓ Account created successfully for {account_data['email']}")
 
-            # Mark account as created in CSV
-            username = account_data.get('first_name', '') + account_data.get('last_name', '') + str(__import__('random').randint(10,99))
+            # Mark account as created in CSV - use the actual username from the bot
+            username = bot.username  # Get the final accepted username (may have been retried)
+            logger.info(f"Final username: {username}")
             update_account_status('accounts.csv', account_data['email'], 'created', username)
 
             # Wait between accounts to avoid detection

@@ -123,6 +123,7 @@ class instaBot:
             if account_data is None:
                 print("Error: No account data provided for spreadsheet mode")
                 sys.exit(1)
+            self.account_data = account_data  # Store for later use (username retries)
             self.phone_number=account_data['email']
             self.fullname=account_data['first_name'] + " " + account_data['last_name']
             self.username=account_data['first_name'] + account_data['last_name'] + str(randint(10,99))
@@ -213,21 +214,100 @@ class instaBot:
         self.driver.find_element(By.NAME, "fullName").send_keys(self.fullname)
         sleep(0.4)
 
-        print("Filling in username...")
-        self.driver.find_element(By.NAME, "username").send_keys(self.username)
-        sleep(0.4)
+        # Username retry logic - try up to 5 times if username is taken
+        username_accepted = False
+        max_username_retries = 5
 
-        print("Filling in password...")
-        self.driver.find_element(By.NAME, "password").send_keys(self.password)
+        for attempt in range(max_username_retries):
+            if attempt > 0:
+                # Generate new username for retry (only works in spreadsheet mode)
+                if hasattr(self, 'account_data'):
+                    self.username = self.account_data['first_name'] + self.account_data['last_name'] + str(randint(100,999))
+                else:
+                    # Fallback: add random numbers to current username
+                    self.username = self.username.rstrip('0123456789') + str(randint(100,999))
+                print(f"Retry {attempt}: Trying new username: {self.username}")
+
+            print("Filling in username...")
+            username_input = self.driver.find_element(By.NAME, "username")
+            username_input.clear()
+            username_input.send_keys(self.username)
+            sleep(0.4)
+
+            print("Filling in password...")
+            password_input = self.driver.find_element(By.NAME, "password")
+            password_input.clear()
+            password_input.send_keys(self.password)
+
+            sleep(1)
+            #we click on Sign up button
+            print("Clicking Sign up button...")
+            button_clicked = False
+
+            # Method 1: Find submit button with "Sign up" text
+            try:
+                signup_button = WebDriverWait(self.driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))
+                )
+                signup_button.click()
+                button_clicked = True
+                print("✓ Clicked Sign up button (method 1)")
+            except:
+                pass
+
+            # Method 2: Press Enter on password field
+            if not button_clicked:
+                try:
+                    password_input.send_keys(Keys.RETURN)
+                    button_clicked = True
+                    print("✓ Submitted via Enter key (method 2)")
+                except:
+                    pass
+
+            # Method 3: Find any visible button and click it
+            if not button_clicked:
+                try:
+                    buttons = self.driver.find_elements(By.TAG_NAME, "button")
+                    for btn in buttons:
+                        if btn.is_displayed() and ("Sign up" in btn.text or "sign up" in btn.text.lower()):
+                            btn.click()
+                            button_clicked = True
+                            print("✓ Clicked button (method 3)")
+                            break
+                except:
+                    pass
+
+            if not button_clicked:
+                print("⚠ Warning: Could not click Sign up button")
+
+            sleep(3)
+
+            # Check for username error
+            try:
+                # Look for error messages near username field
+                error_elements = self.driver.find_elements(By.XPATH,
+                    "//input[@name='username']/following::*[contains(text(), 'This username') or contains(text(), 'already taken') or contains(text(), \"isn't available\")]"
+                )
+
+                if error_elements and any(elem.is_displayed() for elem in error_elements):
+                    print(f"⚠ Username '{self.username}' is already taken")
+                    # Clear the form for retry
+                    continue
+                else:
+                    # No error found, username accepted
+                    print(f"✓ Username '{self.username}' accepted")
+                    username_accepted = True
+                    break
+            except:
+                # If we can't find error elements, assume username was accepted
+                print(f"✓ Username '{self.username}' accepted (no error detected)")
+                username_accepted = True
+                break
+
+        if not username_accepted:
+            raise Exception(f"Failed to find available username after {max_username_retries} attempts")
 
         sleep(1)
-        #we click on Sign up button
-        print("Clicking Sign up button...")
-        signup_button = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//button[@type='submit' and contains(text(), 'Sign up')]"))
-        )
-        signup_button.click()
-        sleep(4)
 
 
         #Birthday verification - using fixed date: 5/3/2002 (March 5, 2002)
