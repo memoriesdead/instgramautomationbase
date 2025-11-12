@@ -8,30 +8,56 @@ import email
 from email.header import decode_header
 import re
 import time
+import socket
 from datetime import datetime, timedelta
 
 class EmailVerifier:
-    def __init__(self, imap_server, imap_port, use_ssl=True):
+    def __init__(self, imap_server, imap_port, use_ssl=True, timeout=60):
         """Initialize email verifier with server details"""
         self.imap_server = imap_server
         self.imap_port = imap_port
         self.use_ssl = use_ssl
+        self.timeout = timeout
         self.imap = None
 
     def connect(self, email_address, password):
-        """Connect to IMAP server"""
-        try:
-            if self.use_ssl:
-                self.imap = imaplib.IMAP4_SSL(self.imap_server, self.imap_port)
-            else:
-                self.imap = imaplib.IMAP4(self.imap_server, self.imap_port)
+        """Connect to IMAP server with timeout and retries"""
+        max_retries = 3
+        retry_delay = 5
 
-            self.imap.login(email_address, password)
-            print(f"✓ Connected to email server for {email_address}")
-            return True
-        except Exception as e:
-            print(f"✗ Failed to connect to email server: {e}")
-            return False
+        for attempt in range(max_retries):
+            try:
+                print(f"Connecting to {self.imap_server}:{self.imap_port} (attempt {attempt + 1}/{max_retries})...")
+
+                # Set socket timeout before creating connection
+                socket.setdefaulttimeout(self.timeout)
+
+                if self.use_ssl:
+                    self.imap = imaplib.IMAP4_SSL(self.imap_server, self.imap_port)
+                else:
+                    self.imap = imaplib.IMAP4(self.imap_server, self.imap_port)
+
+                # Set read timeout for subsequent operations
+                self.imap.sock.settimeout(self.timeout)
+
+                print(f"Logging in as {email_address}...")
+                self.imap.login(email_address, password)
+                print(f"✓ Connected to email server for {email_address}")
+                return True
+
+            except socket.timeout:
+                print(f"✗ Connection timeout (attempt {attempt + 1}/{max_retries})")
+                if attempt < max_retries - 1:
+                    print(f"Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+            except Exception as e:
+                print(f"✗ Connection failed: {e}")
+                if attempt < max_retries - 1:
+                    print(f"Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+
+        print(f"✗ Failed to connect after {max_retries} attempts")
+        return False
 
     def disconnect(self):
         """Disconnect from IMAP server"""
@@ -42,7 +68,7 @@ class EmailVerifier:
         except:
             pass
 
-    def get_verification_code(self, email_address, password, max_wait=120, check_interval=5):
+    def get_verification_code(self, email_address, password, max_wait=180, check_interval=8):
         """
         Retrieve Instagram verification code from email
 
@@ -71,14 +97,16 @@ class EmailVerifier:
             print(f"Attempt {attempts} (elapsed: {elapsed}s / {max_wait}s)...")
 
             try:
-                # Select inbox
+                # Select inbox (with small delay for server)
+                time.sleep(0.5)
                 self.imap.select('INBOX')
 
                 # Search for recent Instagram emails
                 # Look for emails from the last 5 minutes
                 date = (datetime.now() - timedelta(minutes=5)).strftime("%d-%b-%Y")
 
-                # Search for Instagram emails
+                # Search for Instagram emails (with small delay)
+                time.sleep(0.5)
                 status, messages = self.imap.search(None, f'(FROM "instagram" SINCE {date})')
 
                 if status != 'OK':
@@ -95,7 +123,8 @@ class EmailVerifier:
 
                 # Check emails from newest to oldest
                 for email_id in reversed(email_ids):
-                    # Fetch the email
+                    # Fetch the email (with small delay between fetches)
+                    time.sleep(0.3)
                     status, msg_data = self.imap.fetch(email_id, '(RFC822)')
 
                     if status != 'OK':
@@ -287,7 +316,7 @@ class EmailVerifier:
 
 
 def get_instagram_verification_code(email_address, password, imap_server='170.9.13.229',
-                                    imap_port=993, use_ssl=True, max_wait=120):
+                                    imap_port=993, use_ssl=True, max_wait=180, timeout=60):
     """
     Convenience function to get Instagram verification code
 
@@ -297,12 +326,13 @@ def get_instagram_verification_code(email_address, password, imap_server='170.9.
         imap_server: IMAP server address
         imap_port: IMAP port
         use_ssl: Use SSL connection
-        max_wait: Maximum seconds to wait
+        max_wait: Maximum seconds to wait for email
+        timeout: Socket timeout for connection (seconds)
 
     Returns:
         6-digit verification code or None
     """
-    verifier = EmailVerifier(imap_server, imap_port, use_ssl)
+    verifier = EmailVerifier(imap_server, imap_port, use_ssl, timeout=timeout)
     return verifier.get_verification_code(email_address, password, max_wait)
 
 
