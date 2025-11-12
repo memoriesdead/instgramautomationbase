@@ -12,7 +12,7 @@ import socket
 from datetime import datetime, timedelta
 
 class EmailVerifier:
-    def __init__(self, imap_server, imap_port, use_ssl=True, timeout=60):
+    def __init__(self, imap_server, imap_port, use_ssl=True, timeout=30):
         """Initialize email verifier with server details"""
         self.imap_server = imap_server
         self.imap_port = imap_port
@@ -23,7 +23,7 @@ class EmailVerifier:
     def connect(self, email_address, password):
         """Connect to IMAP server with timeout and retries"""
         max_retries = 3
-        retry_delay = 5
+        retry_delay = 2
 
         for attempt in range(max_retries):
             try:
@@ -68,7 +68,7 @@ class EmailVerifier:
         except:
             pass
 
-    def get_verification_code(self, email_address, password, max_wait=180, check_interval=8):
+    def get_verification_code(self, email_address, password, max_wait=60, check_interval=3):
         """
         Retrieve Instagram verification code from email
 
@@ -98,7 +98,7 @@ class EmailVerifier:
 
             try:
                 # Select inbox (with small delay for server)
-                time.sleep(0.5)
+                time.sleep(0.2)
                 self.imap.select('INBOX')
 
                 # Search for recent Instagram emails
@@ -106,7 +106,7 @@ class EmailVerifier:
                 date = (datetime.now() - timedelta(minutes=5)).strftime("%d-%b-%Y")
 
                 # Search for Instagram emails (with small delay)
-                time.sleep(0.5)
+                time.sleep(0.2)
                 status, messages = self.imap.search(None, f'(FROM "instagram" SINCE {date})')
 
                 if status != 'OK':
@@ -124,7 +124,7 @@ class EmailVerifier:
                 # Check emails from newest to oldest
                 for email_id in reversed(email_ids):
                     # Fetch the email (with small delay between fetches)
-                    time.sleep(0.3)
+                    time.sleep(0.1)
                     status, msg_data = self.imap.fetch(email_id, '(RFC822)')
 
                     if status != 'OK':
@@ -316,7 +316,7 @@ class EmailVerifier:
 
 
 def get_instagram_verification_code(email_address, password, imap_server='170.9.13.229',
-                                    imap_port=993, use_ssl=True, max_wait=180, timeout=60):
+                                    imap_port=993, use_ssl=True, max_wait=60, timeout=30):
     """
     Convenience function to get Instagram verification code
 
